@@ -213,3 +213,18 @@ select:focus {
 .mb-1 { margin-bottom: 0.5rem; }
 .mb-2 { margin-bottom: 1rem; }
 .mb-3 { margin-bottom: 1.5rem; }
+
+.loading, .error {
+  padding: 20px;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.mock-warning {
+  background: #fff3cd;
+  color: #856404;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  text-align: center;
+}

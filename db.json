@@ -1,19 +1,10 @@
 {
   "goals": [
     {
-      "id": "3",
-      "name": "New Shoes",
-      "targetAmount": 1500,
-      "savedAmount": 1500,
-      "category": "Electronics",
-      "deadline": "2024-07-20",
-      "createdAt": "2024-03-10"
-    },
-    {
       "id": "4",
       "name": "Construction Money",
       "targetAmount": 50000,
-      "savedAmount": 12000,
+      "savedAmount": 13999,
       "category": "Real Estate",
       "deadline": "2027-12-31",
       "createdAt": "2024-02-01"
