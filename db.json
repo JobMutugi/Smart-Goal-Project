@@ -1,15 +1,6 @@
 {
   "goals": [
     {
-      "id": "4",
-      "name": "Construction Money",
-      "targetAmount": 50000,
-      "savedAmount": 13999,
-      "category": "Real Estate",
-      "deadline": "2027-12-31",
-      "createdAt": "2024-02-01"
-    },
-    {
       "id": "5",
       "name": "Car Maintenance",
       "targetAmount": 800,
@@ -17,15 +8,6 @@
       "category": "Vehicle",
       "deadline": "2025-09-15",
       "createdAt": "2024-06-01"
-    },
-    {
-      "id": "6",
-      "name": "School Fees",
-      "targetAmount": 20000,
-      "savedAmount": 5000,
-      "category": "Education",
-      "deadline": "2028-01-01",
-      "createdAt": "2024-04-20"
     },
     {
       "id": "7",
@@ -53,6 +35,15 @@
       "category": "Home",
       "deadline": "2025-03-31",
       "createdAt": "2024-05-15"
+    },
+    {
+      "id": "49cc",
+      "name": "Jobe",
+      "targetAmount": 2000,
+      "savedAmount": 10,
+      "category": "travel",
+      "deadline": "1111-01-01",
+      "createdAt": "2025-07-20"
     }
   ]
 }

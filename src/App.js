@@ -1,126 +1,200 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Dashboard from './Dashboard';
 import './App.css';
 
-const mockGoals = [
-  {
-    id: "1",
-    name: "Travel Fund - Japan",
-    targetAmount: 5000,
-    savedAmount: 3200,
-    category: "Travel",
-    deadline: "2025-12-31",
-    createdAt: "2024-01-15"
-  },
-  {
-    id: "2",
-    name: "Emergency Fund",
-    targetAmount: 10000,
-    savedAmount: 7500,
-    category: "Emergency",
-    deadline: "2026-06-30",
-    createdAt: "2023-05-01"
-  }
-];
-
-const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:3001' 
-  : 'https://your-render-backend.onrender.com';
+const BASE_URL = 'http://localhost:3001/goals';
 
 function App() {
   const [goals, setGoals] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    name: '',
+    targetAmount: '',
+    savedAmount: '',
+    category: '',
+    deadline: '',
+  });
+  const [depositAmount, setDepositAmount] = useState('');
+  const [selectedGoal, setSelectedGoal] = useState('');
   const [error, setError] = useState(null);
-  const [usingMockData, setUsingMockData] = useState(false);
 
+  // Fetch goals on load
   useEffect(() => {
-    fetchGoals();
+    axios
+      .get(BASE_URL)
+      .then((res) => setGoals(res.data))
+      .catch((err) => setError('Failed to fetch goals.'));
   }, []);
 
-  const fetchGoals = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/goals`);
-      setGoals(response.data);
-      setIsLoading(false);
-    } catch (err) {
-      console.error("API Error, falling back to mock data:", err);
-      setGoals(mockGoals);
-      setUsingMockData(true);
-      setIsLoading(false);
-    }
+  // Add goal
+  const handleAddGoal = (e) => {
+    e.preventDefault();
+    const newGoal = {
+      ...formData,
+      savedAmount: Number(formData.savedAmount),
+      targetAmount: Number(formData.targetAmount),
+      createdAt: new Date().toISOString().split('T')[0],
+    };
+    axios
+      .post(BASE_URL, newGoal)
+      .then((res) => {
+        setGoals([...goals, res.data]);
+        setFormData({
+          name: '',
+          targetAmount: '',
+          savedAmount: '',
+          category: '',
+          deadline: '',
+        });
+      })
+      .catch((err) => setError('Error adding goal.'));
   };
 
-  const apiRequest = async (method, url, data) => {
-    try {
-      if (usingMockData) {
-        return { data }; 
-      }
-      return await axios({ method, url: `${API_BASE_URL}${url}`, data });
-    } catch (err) {
-      throw err;
-    }
+  // Deposit money
+  const handleDeposit = (e) => {
+    e.preventDefault();
+    const goal = goals.find((g) => g.id === selectedGoal);
+    const updatedGoal = {
+      ...goal,
+      savedAmount: goal.savedAmount + Number(depositAmount),
+    };
+    axios
+      .put(`${BASE_URL}/${goal.id}`, updatedGoal)
+      .then((res) => {
+        setGoals(goals.map((g) => (g.id === goal.id ? res.data : g)));
+        setDepositAmount('');
+        setSelectedGoal('');
+      })
+      .catch((err) => setError('Error making deposit.'));
   };
 
-  const addGoal = async (newGoal) => {
-    try {
-      const response = await apiRequest('post', '/goals', newGoal);
-      setGoals([...goals, response?.data || { ...newGoal, id: Date.now().toString() }]);
-    } catch (err) {
-      setError(err.message);
-    }
+  // Delete goal
+  const handleDelete = (id) => {
+    axios
+      .delete(`${BASE_URL}/${id}`)
+      .then(() => {
+        setGoals(goals.filter((g) => g.id !== id));
+      })
+      .catch((err) => setError('Error deleting goal.'));
   };
-
-  const updateGoal = async (updatedGoal) => {
-    try {
-      await apiRequest('put', `/goals/${updatedGoal.id}`, updatedGoal);
-      setGoals(goals.map(goal => goal.id === updatedGoal.id ? updatedGoal : goal));
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const deleteGoal = async (id) => {
-    try {
-      await apiRequest('delete', `/goals/${id}`);
-      setGoals(goals.filter(goal => goal.id !== id));
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const makeDeposit = async (goalId, amount) => {
-    try {
-      const goal = goals.find(g => g.id === goalId);
-      const updatedGoal = {
-        ...goal,
-        savedAmount: goal.savedAmount + Number(amount)
-      };
-      await apiRequest('put', `/goals/${goalId}`, updatedGoal);
-      setGoals(goals.map(g => g.id === goalId ? updatedGoal : g));
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  if (isLoading) return <div className="loading">Loading...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
 
   return (
-    <div className="app">
+    <div className="app" style={{ padding: '20px', fontFamily: 'Arial' }}>
       <h1>Smart Goal Planner</h1>
-      {usingMockData && (
-        <div className="mock-warning">
-          Note: Using mock data. Changes won't persist.
-        </div>
-      )}
-      <Dashboard 
-        goals={goals}
-        addGoal={addGoal}
-        updateGoal={updateGoal}
-        deleteGoal={deleteGoal}
-        makeDeposit={makeDeposit}
-      />
+
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {/* Add Goal */}
+      <form onSubmit={handleAddGoal} style={{ marginBottom: '30px' }}>
+        <h2>Add New Goal</h2>
+        <input
+          name="name"
+          placeholder="Goal Name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          required
+        />
+        <input
+          type="number"
+          name="targetAmount"
+          placeholder="Target Amount"
+          value={formData.targetAmount}
+          onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
+          required
+        />
+        <input
+          type="number"
+          name="savedAmount"
+          placeholder="Initial Saved"
+          value={formData.savedAmount}
+          onChange={(e) => setFormData({ ...formData, savedAmount: e.target.value })}
+          required
+        />
+        <input
+          name="category"
+          placeholder="Category"
+          value={formData.category}
+          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+          required
+        />
+        <input
+          type="date"
+          name="deadline"
+          value={formData.deadline}
+          onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+          required
+        />
+        <button type="submit">Add Goal</button>
+      </form>
+
+      {/* Deposit */}
+      <form onSubmit={handleDeposit} style={{ marginBottom: '30px' }}>
+        <h2>Make a Deposit</h2>
+        <select
+          value={selectedGoal}
+          onChange={(e) => setSelectedGoal(e.target.value)}
+          required
+        >
+          <option value="">Select Goal</option>
+          {goals.map((goal) => (
+            <option key={goal.id} value={goal.id}>
+              {goal.name}
+            </option>
+          ))}
+        </select>
+        <input
+          type="number"
+          placeholder="Deposit Amount"
+          value={depositAmount}
+          onChange={(e) => setDepositAmount(e.target.value)}
+          required
+        />
+        <button type="submit">Deposit</button>
+      </form>
+
+      {/* List of Goals */}
+      <h2>All Goals</h2>
+      {goals.map((goal) => {
+        const percent = Math.min((goal.savedAmount / goal.targetAmount) * 100, 100);
+        const remainingDays = Math.ceil(
+          (new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24)
+        );
+        const isOverdue = remainingDays < 0 && goal.savedAmount < goal.targetAmount;
+
+        return (
+          <div key={goal.id} style={{ border: '1px solid #ccc', marginBottom: '15px', padding: '10px', borderRadius: '8px' }}>
+            <h3>{goal.name}</h3>
+            <p>Category: {goal.category}</p>
+            <p>
+              Saved: ${goal.savedAmount} / ${goal.targetAmount}
+            </p>
+            <p>Deadline: {goal.deadline}</p>
+            <p>
+              {remainingDays >= 0
+                ? `${remainingDays} days remaining`
+                : 'Deadline passed'}
+            </p>
+            {isOverdue && <p style={{ color: 'red' }}>⚠️ Overdue!</p>}
+
+            <div style={{ background: '#eee', height: '20px', borderRadius: '5px', overflow: 'hidden', marginBottom: '10px' }}>
+              <div
+                style={{
+                  width: `${percent}%`,
+                  background: percent >= 100 ? '#4caf50' : '#2196f3',
+                  height: '100%',
+                  transition: 'width 0.5s',
+                }}
+              ></div>
+            </div>
+
+            <button
+              onClick={() => handleDelete(goal.id)}
+              style={{ background: 'red', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px' }}
+            >
+              Delete
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 }
