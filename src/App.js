@@ -3,7 +3,6 @@ import axios from 'axios';
 import Dashboard from './Dashboard';
 import './App.css';
 
-// Mock data fallback
 const mockGoals = [
   {
     id: "1",
@@ -25,7 +24,6 @@ const mockGoals = [
   }
 ];
 
-// Configuration
 const API_BASE_URL = process.env.NODE_ENV === 'development' 
   ? 'http://localhost:3001' 
   : 'https://your-render-backend.onrender.com';
@@ -56,7 +54,7 @@ function App() {
   const apiRequest = async (method, url, data) => {
     try {
       if (usingMockData) {
-        return { data }; // Return mock response
+        return { data }; 
       }
       return await axios({ method, url: `${API_BASE_URL}${url}`, data });
     } catch (err) {
