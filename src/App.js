@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 
@@ -17,15 +17,14 @@ function App() {
   const [selectedGoal, setSelectedGoal] = useState('');
   const [error, setError] = useState(null);
 
-  // Fetch goals on load
   useEffect(() => {
     axios
       .get(BASE_URL)
       .then((res) => setGoals(res.data))
-      .catch((err) => setError('Failed to fetch goals.'));
+      .catch(() => setError('Failed to fetch goals.'));
   }, []);
 
-  // Add goal
+  // Add goal function
   const handleAddGoal = (e) => {
     e.preventDefault();
     const newGoal = {
@@ -46,10 +45,10 @@ function App() {
           deadline: '',
         });
       })
-      .catch((err) => setError('Error adding goal.'));
+      .catch(() => setError('Error adding goal.'));
   };
 
-  // Deposit money
+  // Deposit money to the goal
   const handleDeposit = (e) => {
     e.preventDefault();
     const goal = goals.find((g) => g.id === selectedGoal);
@@ -64,17 +63,17 @@ function App() {
         setDepositAmount('');
         setSelectedGoal('');
       })
-      .catch((err) => setError('Error making deposit.'));
+      .catch(() => setError('Error making deposit.'));
   };
 
-  // Delete goal
+  // Delete goal button
   const handleDelete = (id) => {
     axios
       .delete(`${BASE_URL}/${id}`)
       .then(() => {
         setGoals(goals.filter((g) => g.id !== id));
       })
-      .catch((err) => setError('Error deleting goal.'));
+      .catch(() => setError('Error deleting goal.'));
   };
 
   return (
@@ -83,7 +82,7 @@ function App() {
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      {/* Add Goal */}
+      {/* Adding Goals by the user */}
       <form onSubmit={handleAddGoal} style={{ marginBottom: '30px' }}>
         <h2>Add New Goal</h2>
         <input
@@ -151,15 +150,13 @@ function App() {
         <button type="submit">Deposit</button>
       </form>
 
-      {/* List of Goals */}
+      {/*A Form to hold the List of Goals */}
       <h2>All Goals</h2>
       {goals.map((goal) => {
         const percent = Math.min((goal.savedAmount / goal.targetAmount) * 100, 100);
         const remainingDays = Math.ceil(
           (new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24)
         );
-        const isOverdue = remainingDays < 0 && goal.savedAmount < goal.targetAmount;
-
         return (
           <div key={goal.id} style={{ border: '1px solid #ccc', marginBottom: '15px', padding: '10px', borderRadius: '8px' }}>
             <h3>{goal.name}</h3>
@@ -170,19 +167,18 @@ function App() {
             <p>Deadline: {goal.deadline}</p>
             <p>
               {remainingDays >= 0
-                ? `${remainingDays} days remaining`
-                : 'Deadline passed'}
+          ? `${remainingDays} days remaining`
+          : 'Deadline passed'}
             </p>
-            {isOverdue && <p style={{ color: 'red' }}>⚠️ Overdue!</p>}
 
             <div style={{ background: '#eee', height: '20px', borderRadius: '5px', overflow: 'hidden', marginBottom: '10px' }}>
               <div
-                style={{
-                  width: `${percent}%`,
-                  background: percent >= 100 ? '#4caf50' : '#2196f3',
-                  height: '100%',
-                  transition: 'width 0.5s',
-                }}
+          style={{
+            width: `${percent}%`,
+            background: percent >= 100 ? '#4caf50' : '#2196f3',
+            height: '100%',
+            transition: 'width 0.5s',
+          }}
               ></div>
             </div>
 
