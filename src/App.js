@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const BASE_URL = 'http://localhost:3001/goals';
+const BASE_URL = 'https://json-server-eghv.onrender.com/goals';
 
 function App() {
   const [goals, setGoals] = useState([]);
